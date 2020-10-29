@@ -7,9 +7,7 @@ def is_prime(n: int) -> bool:
     for i in range (1, n+1):
         if n%i==0:
             a+=1
-    if (a==3):
-        return ("True")
-    elif (a==2):
+    if (a==2):
         return ("True")
     elif (a==1):
         return ("True")
