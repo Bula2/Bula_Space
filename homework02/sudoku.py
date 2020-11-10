@@ -103,11 +103,11 @@ def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[in
     >>> find_empty_positions([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
     (2, 0)
     """
-    a=[]
     for i in range (len(grid)):
-        for j in range (len(grid)):
+        for j in range (len(grid[i])):
             if (grid[i][j]=='.'):
                 return (i, j)
+    return (0)
         
 def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.Set[str]:
     """Вернуть множество возможных значения для указанной позиции
@@ -129,26 +129,33 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
 
 
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
-    """ Решение пазла, заданного в grid """
-    """ Как решать Судоку?
-        1. Найти свободную позицию
-        2. Найти все возможные значения, которые могут находиться на этой позиции
-        3. Для каждого возможного значения:
-            3.1. Поместить это значение на эту позицию
-            3.2. Продолжить решать оставшуюся часть пазла
-
+    """
     >>> grid = read_sudoku('puzzle1.txt')
     >>> solve(grid)
     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
     """
-    
-    pass
-
+    def check(grid: tp.List[tp.List[str]]):
+        liz=find_empty_positions(grid)
+        if (liz==0):
+            return (True)
+        else:
+            sett=find_possible_values(grid, (liz[0], liz[1]))
+            listt=list(sett)
+            if (len(listt))==0:
+                return (False)
+            else:
+                for i in listt:
+                    grid[liz[0]][liz[1]]=i
+                    if check(grid)==True:
+                        return(True)
+                    else:
+                        grid[liz[0]][liz[1]]="."
+    check(grid)
+    return(grid)     
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
     """ Если решение solution верно, то вернуть True, в противном случае False """
     # TODO: Add doctests with bad puzzles
-    pass
 
 
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
