@@ -100,7 +100,7 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     return(grid)     
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
-
+    
     for i in range (len(solution)):
         for j in range (len(solution)):
             ij=(i,j)
@@ -114,28 +114,19 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
         
         
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
-    """Генерация судоку заполненного на N элементов
-
-    >>> grid = generate_sudoku(40)
-    >>> sum(1 for row in grid for e in row if e == '.')
-    41
-    >>> solution = solve(grid)
-    >>> check_solution(solution)
-    True
-    >>> grid = generate_sudoku(1000)
-    >>> sum(1 for row in grid for e in row if e == '.')
-    0
-    >>> solution = solve(grid)
-    >>> check_solution(solution)
-    True
-    >>> grid = generate_sudoku(0)
-    >>> sum(1 for row in grid for e in row if e == '.')
-    81
-    >>> solution = solve(grid)
-    >>> check_solution(solution)
-    True
-    """
-    pass
+    import random
+    
+    grid_dot = [["." for i in range (9)] for j in range (9)]
+    grid=solve(grid_dot)
+    N=81-N
+    while N>0:
+        display(grid)
+        point1=random.randint(0,8)
+        point2=random.randint(0,8)
+        if (grid[point1][point2]!= "."):
+            grid[point1][point2]="."
+            N-=1
+    return (grid)
 
 
 if __name__ == "__main__":
