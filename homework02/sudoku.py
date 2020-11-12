@@ -100,9 +100,17 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     return(grid)     
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
-    """ Если решение solution верно, то вернуть True, в противном случае False """
-    # TODO: Add doctests with bad puzzles
-    for i in range (9):
+
+    for i in range (len(solution)):
+        for j in range (len(solution)):
+            ij=(i,j)
+            col=set(get_col(solution, ij))
+            row=set(get_row(solution, ij))
+            block=set(get_block(solution, ij))
+            if (len(col)!=9 or len(row)!=9 or len(block)!=9 or ("." in col) or ("." in row) or ("." in block) ):
+                return (False)
+    return (True)
+            
         
         
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
