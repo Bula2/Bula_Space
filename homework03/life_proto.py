@@ -41,10 +41,9 @@ class GameOfLife:
         clock = pygame.time.Clock()
         pygame.display.set_caption("Game of Life")
         self.screen.fill(pygame.Color("white"))
+        self.grid=self.create_grid()
         # Создание списка клеток
         # PUT YOUR CODE HERE
-        self.grid=self.create_grid(True)
-
         running = True
         while running:
             for event in pygame.event.get():
@@ -58,7 +57,6 @@ class GameOfLife:
             self.draw_lines()
             self.draw_grid()
             self.grid=self.get_next_generation()
-
             pygame.display.flip()
             clock.tick(self.speed)
         pygame.quit()
