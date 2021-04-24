@@ -3,30 +3,60 @@ import typing as tp
 
 
 def update_ref(gitdir: pathlib.Path, ref: tp.Union[str, pathlib.Path], new_value: str) -> None:
-    # PUT YOUR CODE HERE
-    ...
+    gitdir=pathlib.Path(gitdir)
+    gitdir=gitdir/ref
+    if (not pathlib.Path(gitdir).exists()):
+        pathlib.Path(gitdir).touch()
+    with (pathlib.Path(gitdir)).open("w") as f:
+        f.write(new_value)
+        f.close()
+
 
 
 def symbolic_ref(gitdir: pathlib.Path, name: str, ref: str) -> None:
-    # PUT YOUR CODE HERE
-    ...
+    gitdir=pathlib.Path(gitdir)
+    with (pathlib.Path(gitdir/".git"/name)).open("w") as f:
+        f.write(f"ref: {ref}")
+        f.close()
 
 
 def ref_resolve(gitdir: pathlib.Path, refname: str) -> str:
-    # PUT YOUR CODE HERE
-    ...
+    gitdir=pathlib.Path(gitdir)
+    if (refname == "HEAD"):
+        with (pathlib.Path(gitdir / refname)).open("r") as f:
+            f.seek(5)
+            refname=f.read(17)
+            f.close()
+    with (pathlib.Path(gitdir / refname)).open("r") as f:
+        data=f.read()
+        f.close()
+    return(data)
 
 
 def resolve_head(gitdir: pathlib.Path) -> tp.Optional[str]:
-    # PUT YOUR CODE HERE
-    ...
-
+    if gitdir == "master":
+        with (pathlib.Path(gitdir)).open("r") as f:
+            data = f.read()
+            f.close()
+            return(data)
+    else:
+        path = sorted(pathlib.Path(".").glob('**/master'))
+        if len(path) == 0:
+            pass
+        else:
+            with (path[0]).open("r") as f:
+                data = f.read()
+                return(data)
 
 def is_detached(gitdir: pathlib.Path) -> bool:
-    # PUT YOUR CODE HERE
-    ...
 
+    pass
 
 def get_ref(gitdir: pathlib.Path) -> str:
-    # PUT YOUR CODE HERE
-    ...
+    if gitdir == "master":
+        return (gitdir)
+    else:
+        with (pathlib.Path(gitdir / "HEAD" )).open("r") as f:
+            f.seek(5)
+            refname = f.read(17)
+            return (refname)

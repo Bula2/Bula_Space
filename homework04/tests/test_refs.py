@@ -20,7 +20,7 @@ class ReferencesTestCase(TestCase):
         self.fs.create_file(master, contents=master_sha)
         data = ref_resolve(gitdir, "HEAD")
         self.assertEqual(master_sha, data)
-
+        
         ref = "refs/heads/master"
         data = ref_resolve(gitdir, ref)
         self.assertEqual(master_sha, data)
