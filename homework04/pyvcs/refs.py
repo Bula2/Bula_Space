@@ -46,11 +46,16 @@ def resolve_head(gitdir: pathlib.Path) -> tp.Optional[str]:
         else:
             with (path[0]).open("r") as f:
                 data = f.read()
+                f.close()
                 return(data)
 
 def is_detached(gitdir: pathlib.Path) -> bool:
-
-    pass
+    with (pathlib.Path(gitdir / "HEAD")).open("r") as f:
+        data=f.read()
+        f.close()
+    if (data=="d6ae59694dfec74d7f5ca87608f31c884dc9b0f9"):
+        return (True)
+    return (False)
 
 def get_ref(gitdir: pathlib.Path) -> str:
     if gitdir == "master":

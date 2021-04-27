@@ -4,28 +4,29 @@ import typing as tp
 
 
 def repo_find(workdir: tp.Union[str, pathlib.Path] = ".") -> pathlib.Path:
-    gitdir = os.environ["GIT_DIR"]=".git"
     global a
-    a=None
+    a = None
     try:
-        wd_abs=pathlib.Path(workdir).absolute()
-        if workdir==gitdir:
-            return(wd_abs)
+        gitdir = os.environ["GIT_DIR"]
+        wd_abs = pathlib.Path(workdir).absolute()
+        if workdir == gitdir:
+            return (wd_abs)
         else:
             for dirpath, dirnames, filenames in os.walk(workdir):
                 for name in dirnames:
-                    name_cr=os.path.join(dirpath,name)
-                    if name==gitdir:
-                        a=pathlib.Path(name_cr)
-        if (a==None):
+                    name_cr = os.path.join(dirpath, name)
+                    if name == gitdir:
+                        a = pathlib.Path(name_cr)
+        if (a == None):
             parent = os.path.dirname(workdir)
             repo_find(parent)
         return (a)
     except:
         raise AssertionError("Not a git repository")
-
 def repo_create(workdir: tp.Union[str, pathlib.Path]) -> pathlib.Path:
-    gitdir=os.environ["GIT_DIR"]=".git"
+    if "GIT_DIR" not in os.environ:
+        os.environ["GIT_DIR"]=".git"
+    gitdir = os.environ["GIT_DIR"]
     if pathlib.Path(workdir).is_dir():
         workdir=pathlib.Path(workdir)
         if not os.path.exists(workdir/gitdir):
