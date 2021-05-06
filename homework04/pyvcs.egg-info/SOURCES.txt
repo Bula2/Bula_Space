@@ -1,0 +1,15 @@
+setup.py
+pyvcs/__init__.py
+pyvcs/__main__.py
+pyvcs/cli.py
+pyvcs/index.py
+pyvcs/objects.py
+pyvcs/porcelain.py
+pyvcs/refs.py
+pyvcs/repo.py
+pyvcs/tree.py
+pyvcs.egg-info/PKG-INFO
+pyvcs.egg-info/SOURCES.txt
+pyvcs.egg-info/dependency_links.txt
+pyvcs.egg-info/entry_points.txt
+pyvcs.egg-info/top_level.txt
