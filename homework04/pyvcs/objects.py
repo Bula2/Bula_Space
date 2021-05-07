@@ -27,39 +27,31 @@ def hash_object(data: bytes, fmt: str, write: bool = False) -> str:
 
 
 def resolve_object(obj_name: str, gitdir: pathlib.Path) -> tp.List[str]:
-    obj_name_len = len(obj_name)
-    if (obj_name_len > 3 and obj_name_len < 41):
-        a = []
-        pth = pathlib.Path(gitdir / "objects")
-        fl, dir = None, None
-        for dirpath, dirnames, filenames in os.walk(pth):
-            for name in dirnames:
-                dir = os.path.join(dirpath, name)
-                dir = os.path.basename(dir)
-            for file in filenames:
-                fl = os.path.join(dirpath, file)
-                fl = os.path.basename(fl)
-                if obj_name in (dir + fl)[0:(obj_name_len + 1)]:
-                    a.append(dir + fl)
-        if (len(a) == 0):
-            raise AssertionError(f"Not a valid object name {obj_name}")
-        return (a)
-    raise AssertionError(f"Not a valid object name {obj_name}")
-
+    if len(obj_name) not in range(4, 41) or not os.path.isdir(gitdir / "objects" / obj_name[0:2]):
+        raise AssertionError(f"Not a valid object name {obj_name}")
+    current_dir = gitdir / "objects" / obj_name[0:2]
+    end = obj_name[2:]
+    res = []
+    for files in os.listdir(current_dir):
+        if os.path.isfile(current_dir / files) and files == end or files[0:len(end)] == end:
+            res.append(obj_name[0:2] + files)
+    if len(res) == 0:
+        raise AssertionError(f"Not a valid object name {obj_name}")
+    return res
 
 def find_object(obj_name: str, gitdir: pathlib.Path) -> str:
     return resolve_object(obj_name, gitdir)[0]
 
 
 def read_object(sha: str, gitdir: pathlib.Path) -> tp.Tuple[str, bytes]:
-    obj_path = find_object(sha, gitdir)
-    cur_file = open(gitdir / "objects" / obj_path[0:2] / obj_path[2:], "rb")
-    obj_data = zlib.decompress(cur_file.read())
-    right, left = obj_data.find(b" "), obj_data.find(b"\x00")
-    length = int(obj_data[right:left].decode("ascii"))
-    content = obj_data[left + 1:]
-    fmt = obj_data[:right].decode()
-    cur_file.close()
+    path = find_object(sha, gitdir)
+    file = open(gitdir / "objects" / path[0:2] / path[2:], "rb")
+    data = zlib.decompress(file.read())
+    start, end = data.find(b" "), data.find(b"\x00")
+    length = int(data[start:end].decode("ascii"))
+    content = data[end + 1:]
+    fmt = data[:start].decode()
+    file.close()
     return fmt, content
 
 
@@ -114,4 +106,4 @@ def find_tree_files(tree_sha: str, gitdir: pathlib.Path) -> tp.List[tp.Tuple[str
 
 
 def commit_parse(raw: bytes, start: int = 0, dct=None):
-    pass
+    ...

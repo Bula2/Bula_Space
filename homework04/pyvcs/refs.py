@@ -59,10 +59,9 @@ def is_detached(gitdir: pathlib.Path) -> bool:
 
 
 def get_ref(gitdir: pathlib.Path) -> str:
-    if gitdir == "master":
-        return (gitdir)
-    else:
-        with (pathlib.Path(gitdir / "HEAD")).open("r") as f:
-            f.seek(5)
-            refname = f.read(17)
-            return (refname)
+    with pathlib.Path(gitdir, "HEAD").open("r") as f:
+        gref = f.read()
+        f.close()
+    if gref[:5] == "ref: ":
+        gref = gref[5:-1]
+    return (gref)
