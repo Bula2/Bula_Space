@@ -18,38 +18,39 @@ def commit(gitdir: pathlib.Path, message: str, author: tp.Optional[str] = None) 
 
 
 def checkout(gitdir: pathlib.Path, obj_name: str) -> None:
-    for entry in read_index(gitdir):
-        try:
-            os.remove(entry.name)
-        except FileNotFoundError:
-            pass
-    com = commit_parse(read_object(obj_name, gitdir)[1])
-    stopped = False
-    while not stopped:
-        trees: tp.List[tp.Tuple[pathlib.Path, tp.List[tp.Tuple[int, str, str]]]]
-        trees = [(gitdir.parent, read_tree(read_object(com["tree"], gitdir)[1]))]
-        while trees:
-            tree_path, tree_content = trees[-1]
-            del trees[-1]
-            for file_data in tree_content:
-                fmt, data = read_object(file_data[2], gitdir)
-                if fmt == "tree":
-                    trees.append((tree_path / file_data[1], read_tree(data)))
-                    if not (tree_path / file_data[1]).exists():
-                        (tree_path / file_data[1]).mkdir()
-                else:
-                    if not (tree_path / file_data[1]).exists():
-                        with (tree_path / file_data[1]).open("wb") as f:
-                            f.write(data)
-                        (tree_path / file_data[1]).chmod(int(str(file_data[0]), 8))
-        if "parent" in com:
-            parse = commit_parse((read_object(com["parent"], gitdir)[1]))
-            com[parse[0]] = parse[1]
+    ref = get_ref(gitdir)
+    if os.path.isfile(gitdir / ref):
+        branch_head = open(gitdir / ref, "r")
+        ref = branch_head.read()
+        branch_head.close()
+    fmt, old_content = read_object(ref, gitdir)
+    old_content_s = old_content.decode()
+    objects = find_tree_files(old_content_s[5:25], gitdir)
+    project_dir = gitdir.absolute().parent
+    for obj in objects:
+        os.remove(project_dir / obj[0])
+        par_path = pathlib.Path(obj[0]).parent
+        while len(par_path.parents) > 0:
+            os.rmdir(par_path)
+            par_path = pathlib.Path(par_path).parent
+    f_ref = open(gitdir / "HEAD", "w")
+    f_ref.write(obj_name)
+    f_ref.close()
+    fmt, new_content = read_object(obj_name, gitdir)
+    new_content_s = new_content.decode()
+    objects = find_tree_files(new_content_s[5:25], gitdir)
+    for obj in objects:
+        par_cnt = len(pathlib.Path(obj[0]).parents)
+        par_path = project_dir
+        for par in range(par_cnt - 2, -1, -1):
+            par_path /= pathlib.Path(obj[0]).parents[par]
+            if not os.path.isdir(par_path):
+                os.mkdir(par_path)
+        fmt, obj_content = read_object(obj[1], gitdir)
+        if fmt == "blob":
+            pathlib.Path(project_dir / obj[0]).touch()
+            f_blob = open(project_dir / obj[0], "w")
+            f_blob.write(obj_content.decode())
+            f_blob.close()
         else:
-            stopped = True
-    for dir in gitdir.parent.glob("*"):
-        if dir != gitdir and dir.is_dir():
-            try:
-                os.removedirs(dir)
-            except OSError:
-                continue
+            os.mkdir(project_dir / obj[0])

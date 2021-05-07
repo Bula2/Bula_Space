@@ -48,62 +48,55 @@ def resolve_object(obj_name: str, gitdir: pathlib.Path) -> tp.List[str]:
 
 
 def find_object(obj_name: str, gitdir: pathlib.Path) -> str:
-    path = str(gitdir) + "/" + "objects" + "/" + obj_name[:2] + "/" + obj_name[2:]
-    return (path)
+    return resolve_object(obj_name, gitdir)[0]
 
 
 def read_object(sha: str, gitdir: pathlib.Path) -> tp.Tuple[str, bytes]:
-    path = pathlib.Path(gitdir / "objects" / sha[:2] / sha[2:])
-    with path.open("rb") as f:
-        data = zlib.decompress(f.read())
-        a, b = data[0:4].decode(), data[8:]
-        f.close()
-    return (a, b)
+    obj_path = find_object(sha, gitdir)
+    cur_file = open(gitdir / "objects" / obj_path[0:2] / obj_path[2:], "rb")
+    obj_data = zlib.decompress(cur_file.read())
+    right, left = obj_data.find(b" "), obj_data.find(b"\x00")
+    length = int(obj_data[right:left].decode("ascii"))
+    content = obj_data[left + 1:]
+    fmt = obj_data[:right].decode()
+    cur_file.close()
+    return fmt, content
 
 
 def read_tree(data: bytes) -> tp.List[tp.Tuple[int, str, str]]:
-    result= []
-    data=data[1:]
-    while len(data)>0:
+    result = []
+    while len(data) > 0:
         mode = data[:6].decode()
         zero = data.find(b"\00")
-        if mode=="100644":
-            name=data[7:zero]
-            sha=data[zero+1:zero+21].hex()
+        if mode == "100644":
+            name = data[7:zero]
+            sha = data[zero + 1:zero + 21].hex()
             result.append((100644, name.decode(), sha))
-            data=data[zero+21:]
+            data = data[zero + 21:]
         else:
-            name=data[6:zero]
-            sha=data[zero+1:zero+21].hex()
+            name = data[6:zero]
+            sha = data[zero + 1:zero + 21].hex()
             result.append((40000, name.decode(), sha))
-            data=data[zero+21:]
+            data = data[zero + 21:]
     return result
 
 
 def cat_file(obj_name: str, pretty: bool = True) -> None:
     gitdir=repo_find()
     fmt, data =read_object(obj_name, gitdir)
-
     if fmt=="blob" or fmt == "commit":
-        if pretty:
-            print(data.decode())
-        else:
-            print(data)
+        print(data.decode())
     else:
         result=""
-        if pretty:
-            for file in read_tree(data):
-                result += str(file[0]).zfill(6) + " "
-                if file[0]==100644:
-                    result+="blob "
-                else:
-                    result+="tree "
-                result += str(file[2]) + "\t"
-                result += str(file[1]) + "\n"
-            print(result)
-        else:
-            for file in read_tree(data):
-                print(file[2])
+        for file in read_tree(data):
+            result += str(file[0]).zfill(6) + " "
+            if file[0]==100644:
+                result+="blob "
+            else:
+                result+="tree "
+            result += file[2] + "\t"
+            result += file[1] + "\n"
+        print(result)
 
 
 def find_tree_files(tree_sha: str, gitdir: pathlib.Path) -> tp.List[tp.Tuple[str, str]]:
