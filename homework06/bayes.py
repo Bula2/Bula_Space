@@ -1,6 +1,5 @@
 from math import log
 
-
 class NaiveBayesClassifier:
 
     def __init__(self, alpha):
